@@ -51,7 +51,7 @@ this approach.
 ```javascript
 Leap.loop(function(frame, done) {
   // do things
-  done() // if you don't invoke this, you won't get more events
+  done(); // if you don't invoke this, you won't get more events
 })
 ```
 
