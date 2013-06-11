@@ -474,7 +474,7 @@ exports.Leap = {
 }
 
 })()
-},{"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./pointable":9,"./vector":10,"./matrix":11,"./connection":12,"./circular_buffer":13,"./ui":14}],10:[function(require,module,exports){
+},{"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./vector":9,"./pointable":10,"./matrix":11,"./connection":12,"./circular_buffer":13,"./ui":14}],9:[function(require,module,exports){
 var Vector = exports.Vector = function(data){
 	
 	if(data == null){
@@ -848,7 +848,9 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":15}],7:[function(require,module,exports){
+},{"__browserify_process":15}],17:[function(require,module,exports){
+
+},{}],7:[function(require,module,exports){
 var Vector = require("./vector").Vector
 
 /**
@@ -1239,7 +1241,7 @@ var KeyTapGesture = function(data) {
     this.progress = data.progress;
 }
 
-},{"./vector":10}],9:[function(require,module,exports){
+},{"./vector":9}],10:[function(require,module,exports){
 var Vector = require("./vector").Vector
 
 /**
@@ -1330,6 +1332,13 @@ var Pointable = exports.Pointable = function(data) {
   this.direction = new Vector(data.direction);
   /**
    * The tip position in millimeters from the Leap origin.
+   * stabilized
+   *
+   * @member Pointable.prototype.stabilizedTipPosition {Vector}
+   */
+  this.stabilizedTipPosition = new Vector(data.stabilizedTipPosition);
+  /**
+   * The tip position in millimeters from the Leap origin.
    *
    * @member Pointable.prototype.tipPosition {Vector}
    */
@@ -1340,6 +1349,20 @@ var Pointable = exports.Pointable = function(data) {
    * @member Pointable.prototype.tipVelocity {Vector}
    */
   this.tipVelocity = new Vector(data.tipVelocity);
+  /**
+   * Human readable string describing the 'Touch Zone' of this pointable
+   *
+   * @member Pointable.prototype.touchZone {String}
+   */
+  this.touchZone = data.touchZone;
+  /**
+   * Distance from 'Touch Plane'
+   * 
+   * @member Pointable.prototype.touchDist {Number}
+   */
+  this.touchDist = data.touchDist;
+
+
 }
 
 /**
@@ -1370,7 +1393,7 @@ Pointable.prototype.toString = function() {
  */
 Pointable.Invalid = { valid: false };
 
-},{"./vector":10}],11:[function(require,module,exports){
+},{"./vector":9}],11:[function(require,module,exports){
 var Vector = require("./vector").Vector;
 
 var Matrix = exports.Matrix = function(data){
@@ -1494,7 +1517,7 @@ Matrix.prototype = {
 
 Matrix.identity = function(){ return new Matrix(); };
 
-},{"./vector":10}],12:[function(require,module,exports){
+},{"./vector":9}],12:[function(require,module,exports){
 var Connection = exports.Connection = require('./base_connection').Connection
 
 Connection.prototype.setupSocket = function() {
@@ -1511,12 +1534,12 @@ Connection.prototype.teardownSocket = function() {
   delete this.socket;
   delete this.protocol;
 }
-},{"./base_connection":17}],14:[function(require,module,exports){
+},{"./base_connection":18}],14:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region").Region,
   Cursor: require("./ui/cursor").Cursor
 };
-},{"./ui/region":18,"./ui/cursor":19}],20:[function(require,module,exports){
+},{"./ui/region":19,"./ui/cursor":20}],21:[function(require,module,exports){
 var Pipeline = exports.Pipeline = function() {
   this.steps = [];
 }
@@ -1534,7 +1557,7 @@ Pipeline.prototype.run = function(frame) {
   return frame;
 }
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 var Cursor = exports.Cursor = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
@@ -1666,7 +1689,7 @@ Controller.prototype.processFinishedFrame = function(frame) {
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"events":16,"./frame":6,"./circular_buffer":13,"./pipeline":20,"./connection":12,"./node_connection":21,"underscore":22}],6:[function(require,module,exports){
+},{"events":16,"./node_connection":17,"./frame":6,"./circular_buffer":13,"./pipeline":21,"./connection":12,"underscore":22}],6:[function(require,module,exports){
 var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
   , Gesture = require("./gesture").Gesture
@@ -1727,6 +1750,14 @@ var Frame = exports.Frame = function(data) {
    * @type {Number}
    */
   this.timestamp = data.timestamp;
+  /**
+   * Interaction Box for this frame
+   * * have consecutive increasing values.
+   * @member Frame.prototype.id
+   * @type {String}
+   */
+  this.interactionBox = data.interactionBox;
+
   /**
    * The list of Hand objects detected in this frame, given in arbitrary order.
    * The list can be empty if no hands are detected.
@@ -2091,7 +2122,7 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 
-},{"./hand":8,"./pointable":9,"./gesture":7,"./vector":10,"./matrix":11,"underscore":22}],8:[function(require,module,exports){
+},{"./hand":8,"./pointable":10,"./gesture":7,"./vector":9,"./matrix":11,"underscore":22}],8:[function(require,module,exports){
 var Pointable = require("./pointable").Pointable
   , Vector = require("./vector").Vector
   , Matrix = require("./matrix").Matrix
@@ -2413,7 +2444,7 @@ Hand.prototype.toString = function() {
  */
 Hand.Invalid = { valid: false };
 
-},{"./pointable":9,"./vector":10,"./matrix":11,"underscore":22}],22:[function(require,module,exports){
+},{"./pointable":10,"./vector":9,"./matrix":11,"underscore":22}],22:[function(require,module,exports){
 (function(){//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -3642,73 +3673,7 @@ Hand.Invalid = { valid: false };
 }).call(this);
 
 })()
-},{}],17:[function(require,module,exports){
-var chooseProtocol = require('./protocol').chooseProtocol
-  , EventEmitter = require('events').EventEmitter
-  , _ = require('underscore');
-
-var Connection = exports.Connection = function(opts) {
-  opts = _.defaults(opts || {}, {host : '127.0.0.1', enableGestures: false, port: 6437});
-  this.host = opts.host;
-  this.port = opts.port;
-  this.on('ready', function() {
-    this.enableGestures(opts.enableGestures);
-  });
-}
-
-Connection.prototype.handleOpen = function() {
-  this.emit('connect');
-}
-
-Connection.prototype.enableGestures = function(enabled) {
-  this.gesturesEnabled = enabled ? true : false;
-  this.send(this.protocol.encode({"enableGestures": this.gesturesEnabled}));
-}
-
-Connection.prototype.handleClose = function() {
-  this.startReconnection();
-  this.emit('disconnect');
-}
-
-Connection.prototype.startReconnection = function() {
-  var connection = this;
-  setTimeout(function() { connection.connect() }, 1000);
-}
-
-Connection.prototype.disconnect = function() {
-  if (!this.socket) return;
-  this.teardownSocket();
-  this.socket = undefined;
-  this.protocol = undefined;
-}
-
-Connection.prototype.handleData = function(data) {
-  var message = JSON.parse(data);
-  var messageEvent;
-  if (this.protocol === undefined) {
-    messageEvent = this.protocol = chooseProtocol(message);
-    this.emit('ready');
-  } else {
-    messageEvent = this.protocol(message);
-  }
-  this.emit(messageEvent.type, messageEvent);
-}
-
-Connection.prototype.connect = function() {
-  if (this.socket) {
-    this.teardownSocket();
-  }
-  this.socket = this.setupSocket();
-  return true;
-}
-
-Connection.prototype.send = function(data) {
-  this.socket.send(data);
-}
-
-_.extend(Connection.prototype, EventEmitter.prototype);
-
-},{"events":16,"./protocol":23,"underscore":22}],24:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -4061,7 +4026,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":16}],23:[function(require,module,exports){
+},{"events":16}],24:[function(require,module,exports){
 var Frame = require('./frame').Frame
   , util = require('util');
 
@@ -4083,28 +4048,73 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
   }
 }
 
-},{"util":24,"./frame":6}],21:[function(require,module,exports){
-var Frame = require('./frame').Frame
-  , WebSocket = require('ws')
+},{"util":23,"./frame":6}],18:[function(require,module,exports){
+var chooseProtocol = require('./protocol').chooseProtocol
+  , EventEmitter = require('events').EventEmitter
+  , _ = require('underscore');
 
-var Connection = exports.Connection = require('./base_connection').Connection
+var Connection = exports.Connection = function(opts) {
+  opts = _.defaults(opts || {}, {host : '127.0.0.1', enableGestures: false, port: 6437});
+  this.host = opts.host;
+  this.port = opts.port;
+  this.on('ready', function() {
+    this.enableGestures(opts.enableGestures);
+  });
+}
 
-Connection.prototype.setupSocket = function() {
+Connection.prototype.handleOpen = function() {
+  this.emit('connect');
+}
+
+Connection.prototype.enableGestures = function(enabled) {
+  this.gesturesEnabled = enabled ? true : false;
+  this.send(this.protocol.encode({"enableGestures": this.gesturesEnabled}));
+}
+
+Connection.prototype.handleClose = function() {
+  this.startReconnection();
+  this.emit('disconnect');
+}
+
+Connection.prototype.startReconnection = function() {
   var connection = this;
-  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
-  socket.on('open', function() { connection.handleOpen() });
-  socket.on('message', function(m) { connection.handleData(m) });
-  socket.on('close', function() { connection.handleClose() });
-  socket.on('error', function() { connection.startReconnection() });
-  return socket;
+  setTimeout(function() { connection.connect() }, 1000);
 }
 
-Connection.prototype.teardownSocket = function() {
-  this.socket.close();
-  delete this.socket;
-  delete this.protocol;
+Connection.prototype.disconnect = function() {
+  if (!this.socket) return;
+  this.teardownSocket();
+  this.socket = undefined;
+  this.protocol = undefined;
 }
-},{"./frame":6,"./base_connection":17,"ws":25}],18:[function(require,module,exports){
+
+Connection.prototype.handleData = function(data) {
+  var message = JSON.parse(data);
+  var messageEvent;
+  if (this.protocol === undefined) {
+    messageEvent = this.protocol = chooseProtocol(message);
+    this.emit('ready');
+  } else {
+    messageEvent = this.protocol(message);
+  }
+  this.emit(messageEvent.type, messageEvent);
+}
+
+Connection.prototype.connect = function() {
+  if (this.socket) {
+    this.teardownSocket();
+  }
+  this.socket = this.setupSocket();
+  return true;
+}
+
+Connection.prototype.send = function(data) {
+  this.socket.send(data);
+}
+
+_.extend(Connection.prototype, EventEmitter.prototype);
+
+},{"events":16,"./protocol":24,"underscore":22}],19:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , Vector = require('../vector').Vector
   , _ = require('underscore')
@@ -4193,13 +4203,5 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":16,"../vector":10,"underscore":22}],25:[function(require,module,exports){
-(function(global){/// shim for browser packaging
-
-module.exports = function() {
-  return global.WebSocket || global.MozWebSocket;
-}
-
-})(window)
-},{}]},{},[1,2,3])
+},{"events":16,"../vector":9,"underscore":22}]},{},[1,2,3])
 ;
